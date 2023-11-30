@@ -1,10 +1,11 @@
-import express from 'express'
+import express, {Request, Response} from 'express'
+
 import {userRouter} from "./users/users.js";
 
 const port = 8000
 const app = express()
 
-app.get('/hello', (req, res) => {
+app.get('/hello', (req: Request, res: Response) => {
     res.end()
 })
 
