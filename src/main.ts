@@ -1,8 +1,12 @@
-import {App} from "./app";
+import { App } from './app'
 
-async function bootstrap() {
-    const app = new App()
-    await app.init()
+async function bootstrap (): Promise<void> {
+  const app = new App()
+  await app.init()
 }
 
-bootstrap()
+bootstrap().then(() => {
+  console.log('Success')
+}).catch(e => {
+  console.error(e)
+})
