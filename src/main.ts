@@ -6,8 +6,9 @@ async function bootstrap (): Promise<void> {
   await app.init()
 }
 
-bootstrap().then(() => {
-  console.log('Success')
-}).catch(e => {
-  console.error(e)
-})
+bootstrap()
+  .then(() => {
+  })
+  .catch(e => {
+    console.error(e)
+  })
