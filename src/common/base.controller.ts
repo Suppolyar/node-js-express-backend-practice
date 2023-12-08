@@ -1,6 +1,6 @@
 import { type LoggerService } from '../logger/logger.service'
 import { Router, type Response } from 'express'
-import { type IRouteInterface } from './route.interface'
+import { type RouteInterface } from './route.interface'
 
 export abstract class BaseController {
   private readonly _router: Router
@@ -25,7 +25,7 @@ export abstract class BaseController {
     return res.sendStatus(201)
   }
 
-  protected bindRouter (routes: IRouteInterface[]): void {
+  protected bindRouter (routes: RouteInterface[]): void {
     for (const route of routes) {
       this.logger.log(`[${route.method}] ${route.path}`)
       const handler = route.func.bind(this)
