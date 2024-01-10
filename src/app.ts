@@ -4,6 +4,7 @@ import { type UsersController } from './users/users.controller'
 import { type ExceptionFilter } from './errors/exception.filter'
 import { type ILogger } from './logger/logger.interface'
 import { inject, injectable } from 'inversify'
+import { json } from 'body-parser'
 import { TYPES } from './types'
 import 'reflect-metadata'
 @injectable()
@@ -22,6 +23,10 @@ export class App {
     this.port = 8000
   }
 
+  useMiddleware (): void {
+    this.app.use(json())
+  }
+
   useRoutes (): void {
     this.app.use('/users', this.usersController.router)
   }
@@ -31,6 +36,7 @@ export class App {
   }
 
   public async init (): Promise<void> {
+    this.useMiddleware()
     this.useRoutes()
     this.useExceptionsFilters()
 
