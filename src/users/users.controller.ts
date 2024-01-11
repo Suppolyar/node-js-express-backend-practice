@@ -6,7 +6,7 @@ import { TYPES } from '../types'
 import { ILogger } from '../logger/logger.interface'
 import 'reflect-metadata'
 import { type IUsersController } from './users.controller.interface'
-import { type UserLoginDto } from './dto/user-login.dto'
+import { UserLoginDto } from './dto/user-login.dto'
 import { UserRegisterDto } from './dto/user-register.dto'
 import { UsersService } from './users.service'
 import { ValidateMiddleware } from '../common/validate.middleware'
@@ -20,13 +20,17 @@ export class UsersController extends BaseController implements IUsersController 
     super(loggerService)
     this.bindRouter([
       { path: '/register', method: 'post', func: this.register, middlewares: [new ValidateMiddleware(UserRegisterDto)] },
-      { path: '/login', method: 'post', func: this.login }
+      { path: '/login', method: 'post', func: this.login, middlewares: [new ValidateMiddleware(UserLoginDto)] }
     ])
   }
 
   public login = async (req: Request<{}, {}, UserLoginDto>, res: Response, next: NextFunction): Promise<void> => {
-    console.log(req.body)
-    next(new HTTPError(401, 'Auth Error', 'login'))
+    const result = await this.userService.validateUser(req.body)
+    if (!result) {
+      return next(new HTTPError(401, 'Auth Error', 'login'))
+    } else {
+      this.ok(res, {})
+    }
   }
 
   public register = async (
