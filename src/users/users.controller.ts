@@ -12,6 +12,7 @@ import { ValidateMiddleware } from '../common/validate.middleware'
 import { sign } from 'jsonwebtoken'
 import { IConfigService } from '../config/config.service.interface'
 import { IUsersService } from './users.service.interface'
+import { AuthGuard } from '../common/auth.guard'
 
 @injectable()
 export class UsersController extends BaseController implements IUsersController {
@@ -24,7 +25,7 @@ export class UsersController extends BaseController implements IUsersController 
     this.bindRouter([
       { path: '/register', method: 'post', func: this.register, middlewares: [new ValidateMiddleware(UserRegisterDto)] },
       { path: '/login', method: 'post', func: this.login, middlewares: [new ValidateMiddleware(UserLoginDto)] },
-      { path: '/info', method: 'get', func: this.info, middlewares: [] }
+      { path: '/info', method: 'get', func: this.info, middlewares: [new AuthGuard()] }
     ])
   }
 
@@ -60,8 +61,10 @@ export class UsersController extends BaseController implements IUsersController 
     res: Response,
     next: NextFunction
   ): Promise<void> => {
+    const userInfo = await this.userService.getUserInfo(user)
     this.ok(res, {
-      email: user
+      email: userInfo?.email,
+      id: userInfo?.id
     })
   }
 
