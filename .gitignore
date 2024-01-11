@@ -3,3 +3,4 @@
 /.clinic
 /.idea
 /.DS_Store
+.env
