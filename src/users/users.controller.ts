@@ -8,19 +8,23 @@ import 'reflect-metadata'
 import { type IUsersController } from './users.controller.interface'
 import { UserLoginDto } from './dto/user-login.dto'
 import { UserRegisterDto } from './dto/user-register.dto'
-import { UsersService } from './users.service'
 import { ValidateMiddleware } from '../common/validate.middleware'
+import { sign } from 'jsonwebtoken'
+import { IConfigService } from '../config/config.service.interface'
+import { IUsersService } from './users.service.interface'
 
 @injectable()
 export class UsersController extends BaseController implements IUsersController {
   constructor (
     @inject(TYPES.ILogger) private readonly loggerService: ILogger,
-    @inject(TYPES.UsersService) private readonly userService: UsersService
+    @inject(TYPES.UsersService) private readonly userService: IUsersService,
+    @inject(TYPES.ConfigService) private readonly configService: IConfigService
   ) {
     super(loggerService)
     this.bindRouter([
       { path: '/register', method: 'post', func: this.register, middlewares: [new ValidateMiddleware(UserRegisterDto)] },
-      { path: '/login', method: 'post', func: this.login, middlewares: [new ValidateMiddleware(UserLoginDto)] }
+      { path: '/login', method: 'post', func: this.login, middlewares: [new ValidateMiddleware(UserLoginDto)] },
+      { path: '/info', method: 'get', func: this.info, middlewares: [] }
     ])
   }
 
@@ -28,9 +32,9 @@ export class UsersController extends BaseController implements IUsersController 
     const result = await this.userService.validateUser(req.body)
     if (!result) {
       return next(new HTTPError(401, 'Auth Error', 'login'))
-    } else {
-      this.ok(res, {})
     }
+    const jwt = await this.signJWT(req.body.email, this.configService.get('SECRET'))
+    this.ok(res, { jwt })
   }
 
   public register = async (
@@ -49,5 +53,31 @@ export class UsersController extends BaseController implements IUsersController 
         id: result.id
       })
     }
+  }
+
+  public info = async (
+    { user }: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    this.ok(res, {
+      email: user
+    })
+  }
+
+  private async signJWT (email: string, secret: string): Promise<string> {
+    return await new Promise((resolve, reject) => {
+      sign({
+        email,
+        iat: Math.floor(Date.now() / 1000)
+      },
+      secret,
+      { algorithm: 'HS256' },
+      (error, token) => {
+        if (error != null) { reject(error) }
+
+        resolve(token as string)
+      })
+    })
   }
 }
