@@ -3,4 +3,6 @@
 /.clinic
 /.idea
 /.DS_Store
-.env
+/.env
+/prisma/dev.db
+/prisma/dev.db-journal
